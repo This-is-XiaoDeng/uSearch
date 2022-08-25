@@ -2,7 +2,9 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 import sys
+import os
 import requests
+import threading
 import bdwiki
 import bing
 from ui_main import *
@@ -29,7 +31,7 @@ class List(Ui_Dialog, QDialog):
         self.show()
 
     def edit(self, item):
-        print(dir(item))
+        # print(dir(item))
         text = ""
         url = ""
         item_text = item.text()
@@ -37,8 +39,13 @@ class List(Ui_Dialog, QDialog):
             if i["title"] == item_text:
                 text = i["text"]
                 url = i["url"]
+        if text == None:
+            text = "获取中，请稍候重试" # requests.get(url).text
+
         self.textBrowser.setText(text)
         self.lineEdit.setText(url)
+
+        
 
     def open(self):
         url = self.lineEdit.text()
@@ -46,6 +53,19 @@ class List(Ui_Dialog, QDialog):
             os.system("start " + url)
         else:
             os.system("xdg-open " + url)
+
+def getText():
+    global search_list
+    len = -1
+    print("Thread started.")
+    for s in search_list:
+        len += 1
+        try:
+            if s["text"] == None:
+                search_list[len]["text"] = requests.get(s["url"]).text
+        except:
+            pass
+    print("Done")
 
 
 class uSearch(Ui_MainWindow, QMainWindow):
@@ -67,13 +87,15 @@ class uSearch(Ui_MainWindow, QMainWindow):
                     {
                         "title":b[0],
                         "url":b[1],
-                        "text":requests.get(b[1]).text
+                        "text":None
                     }
                 ]
             except:
                 pass
         print(search_list)
         self.childWindow = List()
+        self.thread1 = threading.Thread(None, getText)
+        self.thread1.start()
 
 
 if __name__ == "__main__":
