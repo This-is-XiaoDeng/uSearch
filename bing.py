@@ -11,8 +11,8 @@ def get_list(list_text, start = 0):
 def get_url(html):
     url = get_center.get(html, "href=\"", '"')
     title = get_center.get(html, ">", "</a>")
-    title = title.replace("<strong>", "[red]")
-    title = title.replace("</strong>", "[/]")
+    title = title.replace("<strong>", "")
+    title = title.replace("</strong>", "")
     return [title, url]
 
 def search(keyword,page = "1"):
